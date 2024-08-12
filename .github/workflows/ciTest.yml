@@ -148,34 +148,42 @@ jobs:
           name: api-test-lcov
           path: |
             api-lcov.info
-  coverage-report:
-    needs: [test, api-test]
-    runs-on: ubuntu-latest
-    if: github.repository == 'T1ew/juice-shop' && github.event_name == 'push'
-    steps:
-      - name: "Check out Git repository"
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac #v4.0.0
-      - name: "Download unit test coverage data"
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a #v3.0.2
-        with:
-          name: unit-test-lcov
-      - name: "Download API test coverage data"
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a #v3.0.2
-        with:
-          name: api-test-lcov
-      - name: "Publish coverage to Codeclimate"
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-          sed -i s/SF:/SF:frontend\\//g frontend-lcov.info
-          ./cc-test-reporter format-coverage -t lcov -o codeclimate.frontend.json frontend-lcov.info
-          ./cc-test-reporter format-coverage -t lcov -o codeclimate.server.json server-lcov.info
-          ./cc-test-reporter format-coverage -t lcov -o codeclimate.api.json api-lcov.info
-          ./cc-test-reporter sum-coverage codeclimate.*.json -p 3
-          ./cc-test-reporter upload-coverage
-        shell: bash
+    coverage-report:
+      needs: [test, api-test]
+      runs-on: ubuntu-latest
+      if: github.repository == 'T1ew/juice-shop' && github.event_name == 'push'
+      steps:
+        - name: "Check out Git repository"
+          uses: actions/checkout@v4.0.0
+        - name: "Download unit test coverage data"
+          uses: actions/download-artifact@v3.0.2
+          with:
+            name: unit-test-lcov
+        - name: "Download API test coverage data"
+          uses: actions/download-artifact@v3.0.2
+          with:
+            name: api-test-lcov
+        - name: "Prepare and Publish Coverage to Codeclimate"
+          env:
+            CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+          run: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            
+            # Ensure the coverage files are named correctly based on the downloaded artifacts
+            mv unit-test-lcov frontend-lcov.info
+            mv api-test-lcov api-lcov.info
+            
+            sed -i s/SF:/SF:frontend\\//g frontend-lcov.info
+            
+            ./cc-test-reporter format-coverage -t lcov -o codeclimate.frontend.json frontend-lcov.info
+            ./cc-test-reporter format-coverage -t lcov -o codeclimate.server.json server-lcov.info
+            ./cc-test-reporter format-coverage -t lcov -o codeclimate.api.json api-lcov.info
+            
+            ./cc-test-reporter sum-coverage codeclimate.*.json -p 3
+            ./cc-test-reporter upload-coverage
+          shell: bash
+
   custom-config-test:
     runs-on: ubuntu-latest
     steps:

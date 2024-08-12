@@ -5,22 +5,22 @@ on:
       - l10n_develop
       - gh-pages
     paths-ignore:
-      - '*.md'
-      - 'LICENSE'
-      - 'monitoring/grafana-dashboard.json'
-      - 'screenshots/**'
+      - "*.md"
+      - "LICENSE"
+      - "monitoring/grafana-dashboard.json"
+      - "screenshots/**"
     tags-ignore:
-      - '*'
+      - "*"
   pull_request:
     paths-ignore:
-      - '*.md'
-      - 'LICENSE'
-      - 'data/static/i18n/*.json'
-      - 'frontend/src/assets/i18n/*.json'
+      - "*.md"
+      - "LICENSE"
+      - "data/static/i18n/*.json"
+      - "frontend/src/assets/i18n/*.json"
 env:
   NODE_DEFAULT_VERSION: 20
   ANGULAR_CLI_VERSION: 17
-  CYCLONEDX_NPM_VERSION: '^1.12.0'
+  CYCLONEDX_NPM_VERSION: "^1.12.0"
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -169,17 +169,17 @@ jobs:
           run: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-            
+
             # Ensure the coverage files are named correctly based on the downloaded artifacts
             mv unit-test-lcov frontend-lcov.info
             mv api-test-lcov api-lcov.info
-            
+
             sed -i s/SF:/SF:frontend\\//g frontend-lcov.info
-            
+
             ./cc-test-reporter format-coverage -t lcov -o codeclimate.frontend.json frontend-lcov.info
             ./cc-test-reporter format-coverage -t lcov -o codeclimate.server.json server-lcov.info
             ./cc-test-reporter format-coverage -t lcov -o codeclimate.api.json api-lcov.info
-            
+
             ./cc-test-reporter sum-coverage codeclimate.*.json -p 3
             ./cc-test-reporter upload-coverage
           shell: bash
